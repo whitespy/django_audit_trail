@@ -27,6 +27,10 @@ class ContentTypeFilter(SimpleListFilter):
             return queryset
 
 
+def action_time(audit_trail):
+    return audit_trail.action_time.strftime('%d.%m.%Y, %H:%M:%S')
+
+
 def action(audit_trail):
     colors = {
         AuditTrail.ACTIONS.DELETED: '#FF7575',
@@ -57,7 +61,7 @@ render_changes.allow_tags = True
 
 
 class AuditTrailAdmin(admin.ModelAdmin):
-    list_display = ('id', 'action_time', 'content_type', action, 'user', 'user_ip', 'object_repr', render_changes)
+    list_display = ('id', action_time, 'content_type', action, 'user', 'user_ip', 'object_repr', render_changes)
     list_filter = (ContentTypeFilter, 'action',)
     search_fields = ('object_id', )
     actions = None
