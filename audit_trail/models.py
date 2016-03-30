@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.exceptions import FieldDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -188,5 +189,8 @@ class AuditTrail(models.Model):
         changes = self.changes.copy()
         model_class = self.content_type.model_class()
         for field_name, change in changes.items():
-            change['field_label'] = model_class._meta.get_field(field_name).verbose_name.capitalize()
+            try:
+                change['field_label'] = model_class._meta.get_field(field_name).verbose_name.capitalize()
+            except FieldDoesNotExist:
+                change['field_label'] = field_name
         return changes
