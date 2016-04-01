@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
+from django.template.defaultfilters import date as date_filter
 
 from .models import AuditTrail
 from .watcher import AuditTrailWatcher
@@ -28,7 +30,7 @@ class ContentTypeFilter(SimpleListFilter):
 
 
 def action_time(audit_trail):
-    return audit_trail.action_time.strftime('%d.%m.%Y, %H:%M:%S')
+    return date_filter(timezone.localtime(audit_trail.action_time), 'd.m.Y, H:i:s')
 
 
 def action(audit_trail):
