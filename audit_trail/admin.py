@@ -32,6 +32,8 @@ class ContentTypeFilter(SimpleListFilter):
 def action_time(audit_trail):
     return date_filter(timezone.localtime(audit_trail.action_time), 'd.m.Y, H:i:s')
 
+action_time.admin_order_field = 'action_time'
+
 
 def action(audit_trail):
     colors = {
