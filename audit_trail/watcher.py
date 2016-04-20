@@ -1,5 +1,7 @@
 # coding=utf-8
+from datetime import datetime
 from django.conf import settings
+from django.utils import timezone
 from django.db.models import signals, NOT_PROVIDED
 from django.dispatch import receiver
 from .models import AuditTrail
@@ -101,6 +103,7 @@ class AuditTrailWatcher(object):
         old_values = old_values or {}
         new_values = new_values or {}
         fields = self.fields or [field_name.name for field_name in self.model_class._meta.fields]
+        current_timezone = timezone.get_current_timezone()
 
         for field_name in fields:
             field = self.model_class._meta.get_field(field_name)
@@ -110,7 +113,12 @@ class AuditTrailWatcher(object):
                 default = field.default
 
             old_value = old_values.get(field_name, default)
+            if isinstance(old_value, datetime):
+                old_value = old_value.astimezone(current_timezone)
+
             new_value = new_values.get(field_name, None)
+            if isinstance(new_value, datetime):
+                new_value = new_value.astimezone(current_timezone)
 
             old_value_string = ModelFieldStringifier.stringify(field, old_value)
             new_value_string = ModelFieldStringifier.stringify(field, new_value)
