@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db.models import signals, NOT_PROVIDED
 from django.dispatch import receiver
+from django.db.models.expressions import CombinedExpression
 from .models import AuditTrail
 from .signals import audit_trail_app_ready
 from stringifier import ModelFieldStringifier
@@ -94,7 +95,12 @@ class AuditTrailWatcher(object):
             not_tracked_field = (self.fields is not None and field.name not in self.fields)
             if not_tracked_field or field.name in self.excluded_fields:
                 continue
-            data[field.name] = field.value_from_object(instance)
+            value = field.value_from_object(instance)
+            # http://stackoverflow.com/questions/33672920/django-db-models-f-combined-expression
+            if isinstance(value, CombinedExpression):
+                instance.refresh_from_db()
+                return self.serialize_object(instance)
+            data[field.name] = value
         return data
 
     def get_changes(self, old_values, new_values):
